@@ -13,6 +13,7 @@ import { THEME } from "../../theme";
 import { Heading } from "../../components/Heading";
 import { Background } from "../../components/Background";
 import { DuoCard, DuoCardProps } from "../../components/DuoCard";
+import { DuoMatch } from "../../components/DuoMatch";
 
 export function Game() {
 
@@ -21,12 +22,19 @@ export function Game() {
   const route = useRoute()
   const navigation = useNavigation()
   const game = route.params as GameParams
+  const [discord, setDicord] = useState('')
 
   useEffect(() => {
     fetch(`http://192.168.0.102:3333/games/${game.id}/ads`)
       .then((response) => response.json())
       .then((data) => setDuos(data));
   }, []);
+
+  const getDiscordUser = async (adsId: number) => {
+    fetch(`http://192.168.0.102:3333/ads/${adsId}/discord`)
+    .then((response) => response.json())
+    .then((data) => setDicord(data.discord));
+  }
 
   return (
     <Background>
@@ -60,7 +68,7 @@ export function Game() {
         <FlatList 
           data={duos}
           keyExtractor={item => String(item.id)}
-          renderItem={({ item }) => <DuoCard data={item} onConnect={() => {}} />}
+          renderItem={({ item }) => <DuoCard data={item} onConnect={() => getDiscordUser(item.id)} />}
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.containerLIst}
@@ -71,6 +79,11 @@ export function Game() {
             </Text>
           )}
 
+        />
+        <DuoMatch 
+          visible={discord.length > 0}
+          onClose={() => setDicord('')}
+          discord={discord}
         />
       </SafeAreaView>
     </Background>
